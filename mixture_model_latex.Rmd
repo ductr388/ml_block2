@@ -1,0 +1,27 @@
+## 2. MIXTURE MODELS
+
+Your task is to implement the EM algorithm for Bernoulli mixture model. Please use the
+R template below to solve the assignment. Then, use your implementation to show what
+happens when your mixture model has too few and too many clusters, i.e. set M = 2, 3, 4 and
+compare results. Please provide a short explanation as well.
+A Bernoulli mixture model is
+
+
+$$p(\mathbf{x}) = \sum_{m=1}^M\pi Bern(\mathbf{x} |\mathbf{ \mu}_m)$$
+
+where $\mathbf{x} = (x_1, . . . , x_D)$ is a $D$-dimensional binary random vector, $\pi_m = p(y = m)$ and
+
+$$Bern(\mathbf{x} |\mathbf{ \mu}_m) = \prod_{d=1}^D\mu_{m,d}^{x_d}(1-\mu_{m,d})^{(1-x_d)}$$
+
+where $\mathbf{ \mu}_m = (\mu_{m,1}, . . . , \mu_{m,D})$ is a $D$-dimensional vector of probabilities. As usual, the log
+likelihood of the dataset $\{\mathbf{x}_i\}_{i=1}^n$ is
+
+$$\sum_{i=1}^n \text{log }p(\mathbf{x}_i)$$
+
+Finally, in the EM algorithm, the parameter updates for the Bernoulli mixture model are the
+same as for the Gaussian mixture model.  Equations:
+
+$$\hat{\pi}_m = \frac{1}{n}\sum_{1=1}^nw_i(m)$$
+$$\hat{\mu}_m = \frac{1}{\sum_{1=1}^nw_i(m)}\sum_{1=1}^nw_i(m)\mathbf{x}_i$$
+$$\hat{\Sigma}_m = \frac{1}{\sum_{1=1}^nw_i(m)}\sum_{1=1}^nw_i(m)(\mathbf{x}_i-\hat{\mu}_m)(\mathbf{x}_i-\hat{\mu}_m)^{\text{T}}$$
+where $w_i(m) = p(y_i = m|\mathbf{x}_i,\hat{\mathbf{\theta}})$
