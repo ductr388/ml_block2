@@ -217,7 +217,7 @@ for(it in 1:max_it) {
     }
   }
   
-  #M-step: ML parameter estimation from the data and weights
+  # M-step: ML parameter estimation from the data and weights
   # Calculate new pi
   pi <- 1/1000 * colSums(w)
   
@@ -362,7 +362,7 @@ for(it in 1:max_it) {
     }
   }
   
-  #M-step: ML parameter estimation from the data and weights
+  # M-step: ML parameter estimation from the data and weights
   # Calculate new pi
   pi <- 1/1000 * colSums(w)
   
@@ -506,7 +506,7 @@ for(it in 1:max_it) {
     }
   }
   
-  #M-step: ML parameter estimation from the data and weights
+  # M-step: ML parameter estimation from the data and weights
   # Calculate new pi
   pi <- 1/1000 * colSums(w)
   
@@ -578,7 +578,6 @@ are presented for iterations $1, 12, 24, 32$.
 
 \clearpage
 
-```{r}
 ```{r, echo=FALSE, fig.height=5, fig.width=7, fig.cap = "Different values for $\\mu$ throughout the EM-algoritm with 4 clusters."}
 ggarrange(p9, p10, p11, p12,
           labels=c("Iteration 1","Iteration 12","Iteration 24", "Iteration 32"),
