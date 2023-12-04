@@ -69,12 +69,193 @@ library(tree)
 library(knitr)
 library(dplyr)
 library(ggpubr)
+library(randomForest)
 knitr::opts_chunk$set(
   echo = TRUE, 
   fig.width = 4.5, 
   fig.height = 3)
 ```
 
+
+# Assignment 1. ENSEMBLE METHODS
+
+Your task is to learn some random forests using the function randomForest from the R package randomForest. The training data is produced by running the following R code:
+
+```{r}
+
+x1 <- runif(100)
+x2 <- runif(100)
+trdata <- cbind(x1,x2)
+y <- as.numeric(x1<x2)
+trlabels <- as.factor(y)
+
+
+```
+
+The task is therefore classifying $Y$ from $X_1$ and $X_2$, where $Y$ is binary and $X_1$ and $X_2$ contin- uous. You should learn a random forest with 1, 10 and 100 trees, which you can do by setting the argument ntree to the appropriate value. Use nodesize = 25 and keep.forest = TRUE. The latter saves the random forest learned. You need it because you should also com- pute the misclassification error in the following test dataset (use the function predict for this purpose):
+
+
+```{r}
+
+set.seed(1234)
+x1 <- runif(1000)
+x2 <- runif(1000)
+tedata <- cbind(x1,x2)
+y <- as.numeric(x1<x2)
+telabels <- as.factor(y)
+#plot(x1 ,x2 , col = (y+1))
+
+```
+
+
+* Repeat the procedure above for 1000 training datasets of size 100 and report the mean and variance of the misclassification errors. In other words, create 1000 training datasets of size 100, learn a random forest from each dataset, and compute the mis-classification error in the same test dataset of size 1000. Report results for when the random forest has 1, 10 and 100 trees.
+
+
+```{r}
+
+# Function to create 1000 training datasets
+sim_random_forest <- function(tedata, telabels, assignment, nodesize = 25) {
+  
+  misclass_ntree_1 <- c()
+  misclass_ntree_10 <- c()
+  misclass_ntree_100 <- c()
+  
+  for(i in 1:1000) {
+    
+      x1 <- runif(100)
+      x2 <- runif(100)
+      
+      # Assign y depending on assignment
+      if(assignment == 1) {
+        
+        trdata <- cbind(x1, x2)
+        y <- as.numeric(x1 < x2)
+        trlabels <- as.factor(y)
+        
+      } else if(assignment == 2) {
+        
+        trdata <- cbind(x1, x2)
+        y <- as.numeric(x1 < 0.5)
+        trlabels <- as.factor(y)
+        
+      } else if(assignment == 3) {
+      
+        trdata <- cbind(x1, x2)
+        y <- as.numeric((x1 < 0.5 & x2 < 0.5) | (x1 > 0.5 & x2 > 0.5)) 
+        trlabels <- as.factor(y)
+        
+      }
+    
+      # Train data to data.frame
+      train <- data.frame(y = trlabels, x1, x2)
+
+      # ntree = 1 --------------------------------------------------------------
+      r1 <-  randomForest(y ~ ., data=train, ntree=1,  nodesize=nodesize, keep.forest=TRUE)
+      pred_r1 <-  predict(r1, tedata)
+      confusion_r1 <- table(telabels, pred_r1)
+      misclass_ntree_1[i] <-  (confusion_r1[1,2] + confusion_r1[2,1]) / sum(confusion_r1)
+     
+    
+      # ntree = 10 ------------------------------------------------------------
+      r2 <-  randomForest(y ~ ., data=train, ntree=10,  nodesize=nodesize, keep.forest=TRUE)
+      pred_r2 <-  predict(r2, tedata)
+      confusion_r2 <- table(telabels, pred_r2)
+      misclass_ntree_10[i] <-  (confusion_r2[1,2] + confusion_r2[2,1]) / sum(confusion_r2)
+      
+      
+      # ntree = 100 ------------------------------------------------------------
+      r3 <-  randomForest(y ~ ., data=train, ntree=100,  nodesize=nodesize, keep.forest=TRUE)
+      pred_r3 <-  predict(r3, tedata)
+      confusion_r3 <- table(telabels, pred_r3)
+      misclass_ntree_100[i] <-  (confusion_r3[1,2] + confusion_r3[2,1]) / sum(confusion_r3)
+      
+  }
+  
+  return(list(misclass_ntree_1, misclass_ntree_10, misclass_ntree_100))
+  
+}
+
+
+set.seed(1234)
+x1 <- runif(1000)
+x2 <- runif(1000)
+tedata <- cbind(x1, x2)
+y <- as.numeric(x1 < x2)
+telabels <- as.factor(y)
+
+result1 <- sim_random_forest(tedata, telabels, assignment = 1)
+
+r1 <- data.frame(mean = c(mean(result1[[1]]), mean(result1[[2]]), mean(result1[[3]])),
+                 variance = c(var(result1[[1]]), var(result1[[2]]), var(result1[[3]])))
+
+rownames(r1) <- c("ntree = 1", "ntree = 10", "ntree = 100")
+
+kable(r1, digits = 4, caption = "Mean and variance for first condition")
+
+```
+
+
+* Repeat the exercise above but this time use the condition $(x1 < 0.5)$ instead of $(x1 < x2)$
+when producing the training and test datasets.
+
+```{r}
+
+set.seed(1234)
+x1 <- runif(1000)
+x2 <- runif(1000)
+tedata <- cbind(x1, x2)
+y <- as.numeric(x1 < 0.5)
+telabels <- as.factor(y)
+#plot(x1, x2, col = (y+1))
+
+result2 <- sim_random_forest(tedata, telabels, assignment = 2)
+
+
+r2 <- data.frame(mean = c(mean(result2[[1]]), mean(result2[[2]]), mean(result2[[3]])),
+                 variance = c(var(result2[[1]]), var(result2[[2]]), var(result2[[3]])))
+
+rownames(r2) <- c("ntree = 1", "ntree = 10", "ntree = 100")
+
+kable(r2, digits = 4, caption = "Mean and variance for second condition")
+
+
+```
+
+
+* Repeat the exercise above but this time use the condition $((x1<0.5$ & $x2<0.5) | (x1>0.5$ & $x2>0.5))$ instead of $(x1<x2)$ when producing the training and test
+datasets. Unlike above, use nodesize = 12 for this exercise.
+
+```{r}
+
+set.seed(1234)
+x1 <- runif(1000)
+x2 <- runif(1000)
+tedata <- cbind(x1, x2)
+y <- as.numeric((x1 < 0.5 & x2 < 0.5) | (x1 > 0.5 & x2 > 0.5))
+telabels <- as.factor(y)
+#plot(x1, x2, col = (y+1))
+
+result3 <- sim_random_forest(tedata, telabels, assignment = 3, nodesize = 12)
+
+r3 <- data.frame(mean = c(mean(result3[[1]]), mean(result3[[2]]), mean(result3[[3]])),
+                 variance = c(var(result3[[1]]), var(result3[[2]]), var(result3[[3]])))
+
+rownames(r3) <- c("ntree = 1", "ntree = 10", "ntree = 100")
+
+kable(r3, digits = 4, caption = "Mean and variance for third condition")
+
+
+```
+
+
+* What happens with the mean error rate when the number of trees in the random forest grows? Why?
+
+* The third dataset represents a slightly more complicated classification problem than the first one. Still, you should get better performance for it when using sufficient trees in the random forest. Explain why you get better performance.
+
+**Answer**
+
+
+\clearpage
 # Assignment 2. MIXTURE MODELS
 
 Your task is to implement the EM algorithm for Bernoulli mixture model. Please use the
