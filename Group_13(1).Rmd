@@ -171,10 +171,16 @@ sim_random_forest <- function(tedata, telabels, assignment, nodesize = 25) {
       
   }
   
-  return(list(misclass_ntree_1, misclass_ntree_10, misclass_ntree_100))
+  # Added random forest models to return 
+  return(list(misclass_ntree_1, misclass_ntree_10, misclass_ntree_100, r1, r2, r3))
   
 }
 
+
+```
+
+
+```{r, fig.show="hold", fig.align = 'center', fig.cap = "\\label{easy class} Testdata for first condition"}
 
 set.seed(1234)
 x1 <- runif(1000)
@@ -182,6 +188,19 @@ x2 <- runif(1000)
 tedata <- cbind(x1, x2)
 y <- as.numeric(x1 < x2)
 telabels <- as.factor(y)
+
+ggplot(data.frame(x1,x2,y), aes(x1,x2,col = as.factor(y+1))) + geom_point() + 
+  theme_bw() +  labs(color = NULL) 
+
+
+```
+
+
+
+
+
+```{r}
+
 
 result1 <- sim_random_forest(tedata, telabels, assignment = 1)
 
@@ -192,13 +211,16 @@ rownames(r1) <- c("ntree = 1", "ntree = 10", "ntree = 100")
 
 kable(r1, digits = 4, caption = "Mean and variance for first condition")
 
+
 ```
 
+\clearpage
 
 * Repeat the exercise above but this time use the condition $(x1 < 0.5)$ instead of $(x1 < x2)$
 when producing the training and test datasets.
 
-```{r}
+
+```{r, fig.show="hold", fig.align = 'center', fig.cap = "\\label{easy class} Testdata for second condition"}
 
 set.seed(1234)
 x1 <- runif(1000)
@@ -206,7 +228,16 @@ x2 <- runif(1000)
 tedata <- cbind(x1, x2)
 y <- as.numeric(x1 < 0.5)
 telabels <- as.factor(y)
-#plot(x1, x2, col = (y+1))
+
+ggplot(data.frame(x1,x2,y), aes(x1,x2,col = as.factor(y+1))) + geom_point() + 
+  theme_bw() +  labs(color = NULL) 
+
+
+```
+
+```{r}
+
+
 
 result2 <- sim_random_forest(tedata, telabels, assignment = 2)
 
@@ -225,7 +256,8 @@ kable(r2, digits = 4, caption = "Mean and variance for second condition")
 * Repeat the exercise above but this time use the condition $((x1<0.5$ & $x2<0.5) | (x1>0.5$ & $x2>0.5))$ instead of $(x1<x2)$ when producing the training and test
 datasets. Unlike above, use nodesize = 12 for this exercise.
 
-```{r}
+
+```{r, fig.show="hold", fig.align = 'center', fig.cap = "\\label{easy class} Testdata for third condition"}
 
 set.seed(1234)
 x1 <- runif(1000)
@@ -233,7 +265,15 @@ x2 <- runif(1000)
 tedata <- cbind(x1, x2)
 y <- as.numeric((x1 < 0.5 & x2 < 0.5) | (x1 > 0.5 & x2 > 0.5))
 telabels <- as.factor(y)
-#plot(x1, x2, col = (y+1))
+
+ggplot(data.frame(x1,x2,y), aes(x1,x2,col = as.factor(y+1))) + geom_point() + 
+  theme_bw() +  labs(color = NULL) 
+
+
+```
+
+```{r}
+
 
 result3 <- sim_random_forest(tedata, telabels, assignment = 3, nodesize = 12)
 
@@ -244,7 +284,17 @@ rownames(r3) <- c("ntree = 1", "ntree = 10", "ntree = 100")
 
 kable(r3, digits = 4, caption = "Mean and variance for third condition")
 
+# Boundaries plot. Added random forest models 
+testdata <- data.frame(cbind(tedata, y))
+df <- expand.grid(x1 = seq(0, 1, length.out = 100),
+                  x2 = seq(0, 1, length.out = 100))
 
+df$y <- predict(result3[[5]], df)
+
+ggplot(testdata, aes(x1, x2, fill = as.factor(y))) +
+  geom_raster(data = df, alpha = 0.5) +
+  geom_point(shape = 21, size = 3) +
+  theme_minimal()
 ```
 
 

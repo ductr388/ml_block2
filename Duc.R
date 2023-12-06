@@ -1,19 +1,30 @@
 library(randomForest)
+library(ggplot2)
+
+
+rf <- randomForest(Species ~ Petal.Length + Petal.Width, data = iris, 
+                   proximity = TRUE)
+df <- expand.grid(Petal.Width = seq(0, 3, length.out = 100),
+                  Petal.Length = seq(0, 7, length.out = 100))
+df$Species <- predict(rf, df)
+ggplot(iris, aes(Petal.Width, Petal.Length, fill = Species)) +
+  geom_raster(data = df, alpha = 0.5) +
+  geom_point(shape = 21, size = 3) +
+  theme_minimal()
 
 # Assignment 1                          ####
+# Generate train data
+x1<-runif(100)
+x2<-runif(100)
+trdata<-cbind(x1,x2)
+y<-as.numeric(x1<x2)
+trlabels<-as.factor(y)
+train <- data.frame(y = trlabels, x1, x2)
+
 random_trees <- function(ntree=1){
   # Result vector
   miss_class_error <- c()
-  
   for(iter in 1:1000){
-    # Generate train data
-    x1<-runif(100)
-    x2<-runif(100)
-    trdata<-cbind(x1,x2)
-    y<-as.numeric(x1<x2)
-    trlabels<-as.factor(y)
-    train <- data.frame(y = trlabels, x1, x2)
-    
     # Fit the random forest model
     random_mod  <- randomForest(y ~ ., data=train, ntree=ntree,  nodesize=25, keep.forest=TRUE)
     
@@ -43,12 +54,18 @@ set.seed(123)
 random_1   <- random_trees(1)
 random_10  <- random_trees(10)
 random_100 <- random_trees(100)
+
+df <- expand.grid(x1 = seq(0, 1, length.out = 100),
+                  x2 = seq(0, 1, length.out = 100))
+df$pred <- predict(random_1, test_data)
+
 mean(random_1)
 sd(random_1)
 mean(random_10)
 sd(random_10)
 mean(random_100)
 sd(random_100)
+
 
 # Part 2                                ####
 # Create test data
